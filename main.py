@@ -89,9 +89,15 @@ if st.button("Rechnung erstellen"):
     if invoice_template_path:
         # Download the template file
         response = requests.get(invoice_template_path)
+        # Debugging: Print the length of the downloaded content
+        st.write("Downloaded Content Length:", len(response.content))
+
         with tempfile.NamedTemporaryFile(delete=False) as temp_file:
             temp_file.write(response.content)
             temp_file_path = temp_file.name
+            # Debugging: Print the temporary file path
+            st.write("Temporary File Path:", temp_file_path)
+
 
         # Load the invoice template
         doc = DocxTemplate(temp_file_path)
