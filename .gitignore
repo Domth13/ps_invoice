@@ -1,0 +1,17 @@
+# Ignore virtual environment folders (if you're using one)
+venv/
+env/
+*.pyc
+.env
+
+# Ignore system and editor files
+__pycache__/
+*.swp
+*.swo
+*.log
+
+# Ignore generated files
+generated_invoice.docx
+
+# Ignore Streamlit cache and logs
+.streamlit/
