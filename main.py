@@ -4,6 +4,7 @@ import tempfile
 import os
 import locale
 import pandas as pd
+import requests
 
 # Set the locale to German (Germany)
 locale.setlocale(locale.LC_ALL, 'de_DE.utf8')
@@ -21,7 +22,6 @@ def add_item(position, menge, einheit, beschreibung, einzelpreis):
     }
 
 # Define a function to delete an item from the invoice list
-# Function to delete an item
 def delete_item(item):
     st.session_state.invoice_items.remove(item)
     # Reassign positions to remaining items
@@ -80,44 +80,51 @@ if st.button("Position hinzufügen"):
 
 # Button to generate the invoice document at the bottom
 if st.button("Rechnung erstellen"):
+    # Get the template URL from the environment variable INVOICE_TEMPLATE_PATH
     invoice_template_path = os.getenv('INVOICE_TEMPLATE_PATH')
 
     # Debugging: Print the invoice_template_path
     st.write("Invoice Template Path:", invoice_template_path)
 
     if invoice_template_path:
+        # Download the template file
+        response = requests.get(invoice_template_path)
+        with tempfile.NamedTemporaryFile(delete=False) as temp_file:
+            temp_file.write(response.content)
+            temp_file_path = temp_file.name
+
         # Load the invoice template
-        doc = DocxTemplate(invoice_template_path)
+        doc = DocxTemplate(temp_file_path)
+
+        sum_items = sum(float(item['Gesamtpreis'].replace(",", ".")) for item in st.session_state.invoice_items)
+        tax = round(sum_items * 0.19, 2)
+        total = round(sum_items + tax, 2)
+
+        context = {
+            'invoice_number': invoice_number,
+            'invoice_date': invoice_date,
+            'invoice_subject': invoice_subject,
+            'invoice_bv': invoice_bv,
+            'customer_salutation': customer_salutation,
+            'customer_name': customer_name,
+            'customer_adress': customer_adress,
+            'customer_postcode': customer_postcode,
+            'invoice_items': st.session_state.invoice_items,
+            'sum_items': f"{sum_items:.2f}".replace(".", ","),
+            'tax': f"{tax:.2f}".replace(".", ","),
+            'total': f"{total:.2f}".replace(".", ","),
+        }
+
+        doc.render(context)
+        with tempfile.TemporaryDirectory() as temp_dir:
+            temp_file_path = os.path.join(temp_dir, "generated_invoice.docx")
+            doc.save(temp_file_path)
+            st.success("Rechnung erfolgreich erstellt. Einfach herunterladen.")
+            with open(temp_file_path, "rb") as f:
+                st.download_button("Rechnung herunterladen", f.read(), file_name=f"rechnung_{invoice_number}_{invoice_date}.docx")
+
     else:
-        print("Error: INVOICE_TEMPLATE_PATH environment variable not set.")
-
-
-    sum_items = sum(float(item['Gesamtpreis'].replace(",", ".")) for item in st.session_state.invoice_items)
-    tax = round(sum_items * 0.19, 2)
-    total = round(sum_items + tax, 2)
-
-    context = {
-        'invoice_number': invoice_number,
-        'invoice_date': invoice_date,
-        'invoice_subject': invoice_subject,
-        'invoice_bv': invoice_bv,
-        'customer_salutation': customer_salutation,
-        'customer_name': customer_name,
-        'customer_adress': customer_adress,
-        'customer_postcode': customer_postcode,
-        'invoice_items': st.session_state.invoice_items,
-        'sum_items': f"{sum_items:.2f}".replace(".", ","),
-        'tax': f"{tax:.2f}".replace(".", ","),
-        'total': f"{total:.2f}".replace(".", ","),
-    }
-
-    doc.render(context)
-    with tempfile.TemporaryDirectory() as temp_dir:
-        temp_file_path = os.path.join(temp_dir, "generated_invoice.docx")
-        doc.save(temp_file_path)
-        st.success("Rechnung erfolgreich erstellt. Einfach herunterladen.")
-        with open(temp_file_path, "rb") as f:
-            st.download_button("Rechnung herunterladen", f.read(), file_name=f"rechnung_{invoice_number}_{invoice_date}.docx")
+        st.error("Error: INVOICE_TEMPLATE_PATH environment variable not set.")
 
 # Display the list of items on the invoice
 st.header("Übersicht")
