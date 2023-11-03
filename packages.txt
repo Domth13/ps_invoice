@@ -1,2 +1,3 @@
 locales
 locales-all
+python-docx
