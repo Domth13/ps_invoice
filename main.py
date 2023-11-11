@@ -168,9 +168,11 @@ if st.button("Rechnung erstellen"):
         # Load the invoice template
         doc = DocxTemplate(temp_file_path)
 
-        sum_items = sum(float(item['Gesamtpreis'].replace(",", ".")) for item in st.session_state.invoice_items)
+       # Sum up 'Gesamtpreis' directly as they are already floats
+        sum_items = sum(item['Gesamtpreis'] for item in st.session_state.invoice_items)
         tax = round(sum_items * 0.19, 2)
         total = round(sum_items + tax, 2)
+
 
         context = {
             'invoice_number': invoice_number,
