@@ -40,7 +40,7 @@ def clear_input_fields():
 
 # Function to add items to the invoice list
 def add_item(menge, einheit, beschreibung, einzelpreis):
-    gesamtpreis = menge * einzelpreis
+    gesamtpreis = round(menge * einzelpreis, 2)
     # Assign a color from the color themes based on current number of items
     color = color_themes[len(st.session_state.invoice_items) % len(color_themes)]
     return {
@@ -168,8 +168,16 @@ if st.button("Rechnung erstellen"):
         # Load the invoice template
         doc = DocxTemplate(temp_file_path)
 
+        formatted_invoice_items = []
+        for item in st.session_state.invoice_items:
+            formatted_item = item.copy()
+            formatted_item['Einzelpreis'] = f"{item['Einzelpreis']:.2f}".replace('.', ',')
+            formatted_item['Gesamtpreis'] = f"{item['Gesamtpreis']:.2f}".replace('.', ',')
+            formatted_invoice_items.append(formatted_item)
+
        # Sum up 'Gesamtpreis' directly as they are already floats
         sum_items = sum(item['Gesamtpreis'] for item in st.session_state.invoice_items)
+
         tax = round(sum_items * 0.19, 2)
         total = round(sum_items + tax, 2)
 
@@ -183,7 +191,7 @@ if st.button("Rechnung erstellen"):
             'customer_name': customer_name,
             'customer_adress': customer_adress,
             'customer_postcode': customer_postcode,
-            'invoice_items': st.session_state.invoice_items,
+            'invoice_items': formatted_invoice_items,
             'sum_items': f"{sum_items:.2f}".replace(".", ","),
             'tax': f"{tax:.2f}".replace(".", ","),
             'total': f"{total:.2f}".replace(".", ","),
