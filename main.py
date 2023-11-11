@@ -172,7 +172,7 @@ if st.button("Rechnung erstellen"):
         for item in st.session_state.invoice_items:
             formatted_item = item.copy()
             formatted_item['Einzelpreis'] = f"{item['Einzelpreis']:.2f}".replace('.', ',')
-            formatted_item['Gesamtpreis'] = f"{item['Gesamtpreis']:.2f}".replace('.', ',')
+            formatted_item['Gesamtpreis'] = f"{round(item['Gesamtpreis'], 2):.2f}".replace('.', ',')  # Round and format
             formatted_invoice_items.append(formatted_item)
 
        # Sum up 'Gesamtpreis' directly as they are already floats
