@@ -13,13 +13,13 @@ color_themes = ['#FFD700', '#FF6347', '#90EE90', '#ADD8E6', '#FFB6C1']
 
 # Initialize session state variables for the input fields and their keys
 if 'menge' not in st.session_state:
-    st.session_state.menge = 0.0
+    st.session_state.menge = 0.00
 if 'einheit' not in st.session_state:
     st.session_state.einheit = ""
 if 'beschreibung' not in st.session_state:
     st.session_state.beschreibung = ""
 if 'einzelpreis' not in st.session_state:
-    st.session_state.einzelpreis = 0.0
+    st.session_state.einzelpreis = 0.00
 if 'input_key' not in st.session_state:
     st.session_state.input_key = 0
 
@@ -32,10 +32,10 @@ if 'last_moved' not in st.session_state:
 
 # Function to clear input fields
 def clear_input_fields():
-    st.session_state.menge = 0.0
+    st.session_state.menge = 0.00
     st.session_state.einheit = ""
     st.session_state.beschreibung = ""
-    st.session_state.einzelpreis = 0.0
+    st.session_state.einzelpreis = 0.00
     st.session_state.input_key += 1  # Increment key to reset fields
 
 # Function to add items to the invoice list
